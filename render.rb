@@ -22,7 +22,20 @@ z[0] = 0
 z[1] = 0
 z[2] = 1
 
-scene_geometry = ""
+
+def getVertexIndex(vertex, allVertices, sceneGeometry, tol = 0.001)
+  allVertices.each_index do |i|
+    if OpenStudio::getDistance(vertex, allVertices[i]) < tol
+      return i
+    end
+  end
+  sceneGeometry.insert(-1,"geometry.vertices.push( new THREE.Vector3( #{vertex.x}, #{vertex.z}, #{vertex.y} ) );\n")
+  allVertices << vertex
+  return (allVertices.length - 1)
+end
+
+allVertices = []
+sceneGeometry = "var geometry = new THREE.Geometry();\n"
 model.getSurfaces.each do |surface|
 
   surfaceVertices = surface.vertices
@@ -32,33 +45,30 @@ model.getSurfaces.each do |surface|
   
   surfaceVertices = tInv*surfaceVertices
   subSurfaceVertices = OpenStudio::Point3dVectorVector.new
-  surface.subSurfaces.each do |subSurface|
+  subSurfaces = surface.subSurfaces
+  subSurfaces.each do |subSurface|
     subSurfaceVertices << tInv*subSurface.vertices
   end
 
   triangles = OpenStudio::computeTriangulation(surfaceVertices, subSurfaceVertices)
   if triangles.empty?
-    puts surfaceVertices
-    puts subSurfaceVertices
+    puts "Failed to triangulate surface #{surface.name} with #{subSurfaces.size} sub surfaces"
   end
   
   triangles.each do |vertices|
     vertices = t*vertices
     normal = r*z
     
-    scene_geometry += "var geometry = new THREE.Geometry();\n"
     indices = []
-    vertices.each_index do |i|
-      indices << i
-      vertex = vertices[i]
-      scene_geometry += "geometry.vertices.push( new THREE.Vector3( #{vertex.x}, #{vertex.z}, #{vertex.y} ) );\n"
+    vertices.each do |vertex|
+      indices << getVertexIndex(vertex, allVertices, sceneGeometry)  
     end
-    scene_geometry += "geometry.faces.push( new THREE.Face3( #{indices.join(', ')}, new THREE.Vector3( #{normal[0]}, #{normal[2]}, #{normal[1]} ) ) );\n"
-    scene_geometry += "var mesh = new THREE.Mesh( geometry, material );\n"
-    scene_geometry += "scene.add( mesh );\n\n"
+    sceneGeometry += "geometry.faces.push( new THREE.Face3( #{indices.join(', ')}, new THREE.Vector3( #{normal[0]}, #{normal[2]}, #{normal[1]} ) ) );\n"
   end
 end
-
+sceneGeometry += "var mesh = new THREE.Mesh( geometry, material );\n"
+sceneGeometry += "scene.add( mesh );\n\n"
+    
 # read in template
 html_in_path = "#{File.dirname(__FILE__)}/render.html.in"
 html_in = ""
