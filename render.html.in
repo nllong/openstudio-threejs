@@ -53,7 +53,7 @@
 				scene.add( light );
 
         // geometry
-        <%= scene_geometry %>
+        <%= sceneGeometry %>
         
         // renderer
 				renderer = new THREE.WebGLRenderer( { antialias: false } );
