@@ -17,7 +17,7 @@
 
 			var container;
 
-			var camera, controls, scene, renderer;
+			var camera, controls, scene, renderer, light;
 
       function init() {
 
@@ -34,32 +34,100 @@
 
         // scene
 				scene = new THREE.Scene();
-				scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+				scene.fog = new THREE.FogExp2( 0xcccccc , 0.002 );
         
-        var material =  new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, wireframe: false, side: THREE.DoubleSide, opacity: 1.0, transparent: false } );
-        //var material =  new THREE.MeshFaceMaterial( { color: 0xffffff, shading: THREE.FlatShading } );
-        //var material =  new THREE.MeshBasicMaterial( { color: 0x666666, shading: THREE.SmoothShading, wireframe: false, side: THREE.DoubleSide, opacity: 0.7, transparent: true } );
+        var materials =  [];
+
+        var floor_ext =  new THREE.MeshLambertMaterial( { color: 0x808080, ambient: 0x808080, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var floor_ext_index = materials.length;
+        materials.push(floor_ext);
+        
+        var floor_int =  new THREE.MeshLambertMaterial( { color: 0xbfbfbf, ambient: 0xbfbfbf, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var floor_int_index = materials.length;
+        materials.push(floor_int);
+
+        
+        var wall_ext =  new THREE.MeshLambertMaterial( { color: 0xccb266, ambient: 0xccb266, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var wall_ext_index = materials.length;
+        materials.push(wall_ext);
+        
+        var wall_int =  new THREE.MeshLambertMaterial( { color: 0xebe2c5, ambient: 0xebe2c5, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var wall_int_index = materials.length;
+        materials.push(wall_int);
+        
+        
+        var roof_ext =  new THREE.MeshLambertMaterial( { color: 0x994c4c, ambient: 0x994c4c, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var roof_ext_index = materials.length;
+        materials.push(roof_ext);
+        
+        var roof_int =  new THREE.MeshLambertMaterial( { color: 0xdbca95, ambient: 0xdbca95, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var roof_int_index = materials.length;
+        materials.push(roof_int);
+        
+        
+        var window_ext =  new THREE.MeshLambertMaterial( { color: 0xcc0066, ambient: 0xcc0066, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.FrontSide } );
+        
+        var window_int =  new THREE.MeshLambertMaterial( { color: 0xc0e2eb, ambient: 0xc0e2eb, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.BackSide } );
+
+
+        door_ext = new THREE.Color(0x852b99);
+        door_int = new THREE.Color(0xcabc95);
+
+        site_shading = new THREE.Color(0x954b01);
+        site_shading_back = new THREE.Color(0xdcbbd1);
+              
+        building_shading = new THREE.Color(0x954b01);
+        building_shading_back = new THREE.Color(0xd8cbe5);
+
+        space_shading = new THREE.Color(0x4c6eb2);
+        space_shading_back = new THREE.Color(0xe038b7);
+
+        interior_partition_surface = new THREE.Color(0x9ebc8f);
+        interior_partition_surface_back = new THREE.Color(0xd5e2cf);
         
         // lights
-				light = new THREE.DirectionalLight( 0xff0000 );
-				light.position.set( 0, -1, 0 );
-				scene.add( light );
-        
-        light = new THREE.DirectionalLight( 0x00ff00 );
-				light.position.set( 0, 0, -1 );
+				//light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        light = new THREE.SpotLight( 0xffffff, 1.0 );
+				light.position.set( 25, 30, -5 );
+        light.target.position.set(5, 0, -5);
+        light.castShadow = true;
+        light.onlyShadow = false;
+        light.shadowDarkness = 0.5;
+        light.shadowMapWidth = 1024; 
+        light.shadowMapHeight = 1024;
+        light.shadowCameraVisible = true; // for debugging
+        light.shadowCameraNear = 2;
+        light.shadowCameraFar = camera.far;
+        light.shadowCameraLeft = -2;
+        light.shadowCameraRight = 2;
+        light.shadowCameraTop = 2;
+        light.shadowCameraBottom = -2;
 				scene.add( light );
 
-        light = new THREE.AmbientLight( 0x0000ff );
-				scene.add( light );
+        //light = new THREE.AmbientLight( 0xd0d0d0 );
+				//scene.add( light );
 
         // geometry
         <%= sceneGeometry %>
         
         // renderer
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
-				//renderer.setClearColor( scene.fog.color, 1 );
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+        //renderer = new THREE.CanvasRenderer( );
+				renderer.setClearColor(scene.fog.color, 1)
 				renderer.setSize( window.innerWidth, window.innerHeight );
-        
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+        renderer.shadowMapType = THREE.PCFSoftShadowMap;
+
+        //renderer.shadowCameraNear = 3;
+        //renderer.shadowCameraFar = camera.far;
+        //renderer.shadowCameraFov = 50;
+
+        renderer.shadowMapBias = 0.0039;
+        renderer.shadowMapDarkness = 0.5;
+        renderer.shadowMapWidth = 1024;
+        renderer.shadowMapHeight = 1024;
+
         container = document.getElementById( 'container' );
 				container.appendChild( renderer.domElement );
         
@@ -79,6 +147,7 @@
       
 			function animate() {
 				requestAnimationFrame( animate );
+        render();
 				controls.update();
 			}
       
