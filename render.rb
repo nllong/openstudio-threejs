@@ -51,7 +51,7 @@ def getVertexIndex(vertex, allVertices, sceneGeometry, tol = 0.001)
 end
 
 allVertices = []
-sceneGeometry = "var geometry = new THREE.Geometry();\n"
+sceneGeometry = "geometry = new THREE.Geometry();\n"
 sceneGeometry += "var face;\n"
 sceneGeometry += "geometry.materials = materials;\n"
 model.getSurfaces.each do |surface|
@@ -108,7 +108,7 @@ model.getSurfaces.each do |surface|
     sceneGeometry += "geometry.faces.push(face);\n"
   end
 end
-sceneGeometry += "var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(geometry.materials) );\n"
+sceneGeometry += "mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(geometry.materials) );\n"
 sceneGeometry += "mesh.castShadow = true;\n"
 sceneGeometry += "mesh.receiveShadow = true;\n"
 sceneGeometry += "scene.add( mesh );\n\n"

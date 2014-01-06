@@ -17,7 +17,7 @@
 
 			var container;
 
-			var camera, controls, scene, renderer, light;
+			var camera, controls, scene, geometry, mesh, renderer, light;
 
       function init() {
 
@@ -97,7 +97,7 @@
         light.shadowMapHeight = 1024;
         light.shadowCameraVisible = true; // for debugging
         light.shadowCameraNear = 2;
-        light.shadowCameraFar = camera.far;
+        light.shadowCameraFar = 50; // camera.far
         light.shadowCameraLeft = -2;
         light.shadowCameraRight = 2;
         light.shadowCameraTop = 2;
