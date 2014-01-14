@@ -38,37 +38,40 @@
         
         var materials =  [];
 
-        var floor_ext =  new THREE.MeshLambertMaterial( { color: 0x808080, ambient: 0x808080, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var floor_ext =  new THREE.MeshLambertMaterial( { color: 0x808080, ambient: 0x808080, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide, combine: THREE.MixOperation } );
         var floor_ext_index = materials.length;
         materials.push(floor_ext);
         
-        var floor_int =  new THREE.MeshLambertMaterial( { color: 0xbfbfbf, ambient: 0xbfbfbf, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var floor_int =  new THREE.MeshLambertMaterial( { color: 0xbfbfbf, ambient: 0xbfbfbf, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide, combine: THREE.MixOperation } );
         var floor_int_index = materials.length;
         materials.push(floor_int);
 
         
-        var wall_ext =  new THREE.MeshLambertMaterial( { color: 0xccb266, ambient: 0xccb266, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var wall_ext =  new THREE.MeshLambertMaterial( { color: 0xccb266, ambient: 0xccb266, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide, combine: THREE.MixOperation } );
         var wall_ext_index = materials.length;
         materials.push(wall_ext);
         
-        var wall_int =  new THREE.MeshLambertMaterial( { color: 0xebe2c5, ambient: 0xebe2c5, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var wall_int =  new THREE.MeshLambertMaterial( { color: 0xebe2c5, ambient: 0xebe2c5, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide, combine: THREE.MixOperation } );
         var wall_int_index = materials.length;
         materials.push(wall_int);
         
         
-        var roof_ext =  new THREE.MeshLambertMaterial( { color: 0x994c4c, ambient: 0x994c4c, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide } );
+        var roof_ext =  new THREE.MeshLambertMaterial( { color: 0x994c4c, ambient: 0x994c4c, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.FrontSide, combine: THREE.MixOperation } );
         var roof_ext_index = materials.length;
         materials.push(roof_ext);
         
-        var roof_int =  new THREE.MeshLambertMaterial( { color: 0xdbca95, ambient: 0xdbca95, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide } );
+        var roof_int =  new THREE.MeshLambertMaterial( { color: 0xdbca95, ambient: 0xdbca95, shading: THREE.SmoothShading, wireframe: false, opacity: 1.0, transparent: false, side: THREE.BackSide, combine: THREE.MixOperation } );
         var roof_int_index = materials.length;
         materials.push(roof_int);
         
         
-        var window_ext =  new THREE.MeshLambertMaterial( { color: 0xcc0066, ambient: 0xcc0066, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.FrontSide } );
+        var window_ext =  new THREE.MeshLambertMaterial( { color: 0x66b2cc, ambient: 0x66b2cc, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.FrontSide, combine: THREE.MixOperation } );
+        var window_ext_index = materials.length;
+        materials.push(window_ext);
         
-        var window_int =  new THREE.MeshLambertMaterial( { color: 0xc0e2eb, ambient: 0xc0e2eb, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.BackSide } );
-
+        var window_int =  new THREE.MeshLambertMaterial( { color: 0xc0e2eb, ambient: 0xc0e2eb, shading: THREE.SmoothShading, wireframe: false, opacity: 0.6, transparent: true, side: THREE.BackSide, combine: THREE.MixOperation } );
+        var window_int_index = materials.length;
+        materials.push(window_int);
 
         door_ext = new THREE.Color(0x852b99);
         door_int = new THREE.Color(0xcabc95);
@@ -86,26 +89,26 @@
         interior_partition_surface_back = new THREE.Color(0xd5e2cf);
         
         // lights
-				//light = new THREE.DirectionalLight( 0xffffff, 1.0 );
-        light = new THREE.SpotLight( 0xffffff, 1.0 );
-				light.position.set( 25, 30, -5 );
+				light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        //light = new THREE.SpotLight( 0xffffff, 1.0 );
+				light.position.set( 250, 300, -50 );
         light.target.position.set(5, 0, -5);
         light.castShadow = true;
         light.onlyShadow = false;
-        light.shadowDarkness = 0.5;
+        light.shadowDarkness = 0.3;
         light.shadowMapWidth = 1024; 
         light.shadowMapHeight = 1024;
-        light.shadowCameraVisible = true; // for debugging
+        //light.shadowCameraVisible = true; // for debugging
         light.shadowCameraNear = 2;
-        light.shadowCameraFar = 50; // camera.far
-        light.shadowCameraLeft = -2;
-        light.shadowCameraRight = 2;
-        light.shadowCameraTop = 2;
-        light.shadowCameraBottom = -2;
+        light.shadowCameraFar = 5000; // camera.far
+        light.shadowCameraLeft = -200;
+        light.shadowCameraRight = 200;
+        light.shadowCameraTop = 200;
+        light.shadowCameraBottom = -200;
 				scene.add( light );
 
-        //light = new THREE.AmbientLight( 0xd0d0d0 );
-				//scene.add( light );
+        light = new THREE.AmbientLight( 0x808080 );
+				scene.add( light );
 
         // geometry
         <%= sceneGeometry %>
@@ -119,9 +122,9 @@
         renderer.shadowMapSoft = true;
         renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
-        //renderer.shadowCameraNear = 3;
-        //renderer.shadowCameraFar = camera.far;
-        //renderer.shadowCameraFov = 50;
+        renderer.shadowCameraNear = 3;
+        renderer.shadowCameraFar = camera.far;
+        renderer.shadowCameraFov = 50;
 
         renderer.shadowMapBias = 0.0039;
         renderer.shadowMapDarkness = 0.5;

@@ -24,7 +24,29 @@ if ARGV[0].nil?
   wall = OpenStudio::Model::Surface.new(verts, model)
 else
   puts ARGV[0]
-  model = OpenStudio::Model::Model::load( OpenStudio::Path.new(ARGV[0]) ).get
+  extension = File.extname(ARGV[0])
+  inputPath = OpenStudio::Path.new(ARGV[0])
+  if extension == ".osm"
+    vt = OpenStudio::OSVersion::VersionTranslator.new
+    model = vt.load(inputPath).get
+  elsif extension == ".idf"
+    rt = OpenStudio::EnergyPlus::ReverseTranslator.new
+    model = rt.loadModel(inputPath).get  
+  elsif extension == ".xml"
+    # try sdd
+    rt = OpenStudio::SDD::SddReverseTranslator.new
+    model = rt.loadModel(inputPath)
+    if not model.empty?
+      model = model.get
+    elsif model.empty?
+      # try gbXML
+      rt = OpenStudio::GbXML::GbXMLReverseTranslator.new
+      model = rt.loadModel(inputPath)
+      if not model.empty?
+        model = model.get
+      end
+    end
+  end
 end
 
 camera_x = 0
@@ -107,6 +129,35 @@ model.getSurfaces.each do |surface|
     sceneGeometry += "face.receiveShadow  = true;\n";
     sceneGeometry += "geometry.faces.push(face);\n"
   end
+  
+  subSurfaces.each do |subSurface|
+ 
+    subSurfaceVertices = tInv*subSurface.vertices
+    triangles = OpenStudio::computeTriangulation(subSurfaceVertices, OpenStudio::Point3dVectorVector.new)
+
+    triangles.each do |vertices|
+      vertices = t*vertices
+      normal = r*z
+
+      indices = []
+      vertices.each do |vertex|
+        indices << getVertexIndex(vertex, allVertices, sceneGeometry)  
+      end    
+      
+      sceneGeometry += "face = new THREE.Face3( #{indices.join(', ')}, new THREE.Vector3( #{normal[0]}, #{normal[2]}, #{-normal[1]} ));\n"
+      sceneGeometry += "face.materialIndex = window_ext_index;\n";
+      sceneGeometry += "face.castShadow = true;\n";
+      sceneGeometry += "face.receiveShadow  = true;\n";
+      sceneGeometry += "geometry.faces.push(face);\n"
+      
+      sceneGeometry += "face = new THREE.Face3( #{indices.join(', ')}, new THREE.Vector3( #{normal[0]}, #{normal[2]}, #{-normal[1]} ));\n"
+      sceneGeometry += "face.materialIndex = window_int_index;\n";
+      sceneGeometry += "face.castShadow = true;\n";
+      sceneGeometry += "face.receiveShadow  = true;\n";
+      sceneGeometry += "geometry.faces.push(face);\n"
+    end
+  end
+
 end
 sceneGeometry += "mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(geometry.materials) );\n"
 sceneGeometry += "mesh.castShadow = true;\n"
