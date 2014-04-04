@@ -28,7 +28,7 @@ else
   inputPath = OpenStudio::Path.new(ARGV[0])
   if extension == ".osm"
     vt = OpenStudio::OSVersion::VersionTranslator.new
-    model = vt.load(inputPath).get
+    model = vt.loadModel(inputPath).get
   elsif extension == ".idf"
     rt = OpenStudio::EnergyPlus::ReverseTranslator.new
     model = rt.loadModel(inputPath).get  
