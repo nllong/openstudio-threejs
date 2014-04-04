@@ -73,9 +73,14 @@ def getVertexIndex(vertex, allVertices, sceneGeometry, tol = 0.001)
 end
 
 allVertices = []
+
 sceneGeometry = "geometry = new THREE.Geometry();\n"
 sceneGeometry += "var face;\n"
 sceneGeometry += "geometry.materials = materials;\n"
+
+objVertices = ""
+objFaces = ""
+
 model.getSurfaces.each do |surface|
 
   ext_color = nil
@@ -97,6 +102,12 @@ model.getSurfaces.each do |surface|
   r = t.rotationMatrix
   tInv = t.inverse
   
+  siteTransformation = OpenStudio::Transformation.new
+  planarSurfaceGroup = surface.planarSurfaceGroup
+  if not planarSurfaceGroup.empty?
+    siteTransformation = planarSurfaceGroup.get.siteTransformation
+  end
+  
   surfaceVertices = tInv*surfaceVertices
   subSurfaceVertices = OpenStudio::Point3dVectorVector.new
   subSurfaces = surface.subSurfaces
@@ -110,8 +121,8 @@ model.getSurfaces.each do |surface|
   end
   
   triangles.each do |vertices|
-    vertices = t*vertices
-    normal = r*z
+    vertices = siteTransformation*t*vertices
+    normal = siteTransformation.rotationMatrix*r*z
 
     indices = []
     vertices.each do |vertex|
@@ -128,6 +139,9 @@ model.getSurfaces.each do |surface|
     sceneGeometry += "face.castShadow = true;\n";
     sceneGeometry += "face.receiveShadow  = true;\n";
     sceneGeometry += "geometry.faces.push(face);\n"
+    
+    indices.each_index {|i| indices[i] = indices[i] + 1}
+    objFaces += "f #{indices.join(' ')}\n"
   end
   
   subSurfaces.each do |subSurface|
@@ -136,8 +150,8 @@ model.getSurfaces.each do |surface|
     triangles = OpenStudio::computeTriangulation(subSurfaceVertices, OpenStudio::Point3dVectorVector.new)
 
     triangles.each do |vertices|
-      vertices = t*vertices
-      normal = r*z
+      vertices = siteTransformation*t*vertices
+      normal = siteTransformation.rotationMatrix*r*z
 
       indices = []
       vertices.each do |vertex|
@@ -155,6 +169,9 @@ model.getSurfaces.each do |surface|
       sceneGeometry += "face.castShadow = true;\n";
       sceneGeometry += "face.receiveShadow  = true;\n";
       sceneGeometry += "geometry.faces.push(face);\n"
+      
+      indices.each_index {|i| indices[i] = indices[i] + 1}
+      objFaces += "f #{indices.join(' ')}\n"
     end
   end
 
@@ -179,6 +196,24 @@ html_out = renderer.result(binding)
 html_out_path = "./render.html"
 File.open(html_out_path, 'w') do |file|
   file << html_out
+  
+  # make sure data is written to the disk one way or the other      
+  begin
+    file.fsync
+  rescue
+    file.flush
+  end
+end
+
+# write object file
+html_out_path = "./render.obj"
+File.open(html_out_path, 'w') do |file|
+
+  file << "# OpenStudio OBJ Export\n"
+  allVertices.each do |v|
+    file << "v #{v.x} #{v.z} #{-v.y}\n"
+  end
+  file << objFaces
   
   # make sure data is written to the disk one way or the other      
   begin
